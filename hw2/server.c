@@ -17,7 +17,8 @@ void error_handling(const char *message){
 char nicknames[MAX_CLIENT][NICK_SIZE];
 
 void broadcast(int from, char *message, int size, fd_set *reads){
-    for(int i = 0; i < MAX_CLIENT; i++){
+    int i;
+    for(i = 0; i < MAX_CLIENT; i++){
         if(FD_ISSET(i, reads)){
             char buf[BUFSIZE+NICK_SIZE] = {0,};
             sprintf(buf, "[%s] %s", nicknames[from], message);
@@ -27,7 +28,8 @@ void broadcast(int from, char *message, int size, fd_set *reads){
 }
 
 void send_current_users(int to, fd_set *reads){
-    for(int i = 0; i < MAX_CLIENT; i++){
+    int i;
+    for(i = 0; i < MAX_CLIENT; i++){
         if(FD_ISSET(i, reads) && i != to){
             char buf[BUFSIZE+NICK_SIZE] = {0,};
             sprintf(buf, "* Current user: %s", nicknames[i]);
