@@ -13,7 +13,7 @@ void error_handling(const char *message) {
 
 int main(int argc, char **argv) {
     if (argc != 4) {
-        printf("Usage: %s <ip> <port> <nickname>", argv[0]);
+        printf("Usage: %s <ip> <port> <nickname>\n", argv[0]);
         exit(1);
     }
 
@@ -37,29 +37,29 @@ int main(int argc, char **argv) {
     write(sock, nickname, NICK_SIZE); // 닉네임 보내기
 
     while (1) {
-        printf("Input message (Q to quit): ");
+        memset(message, 0, sizeof(message));
+	printf("Input message (Q to quit): ");
         fgets(message, sizeof(message), stdin);
 	int len = strlen(message);
-        if (len > 0 && message[len - 1] == '\n') {
-            message[len - 1] = '\0';
-        }
-        if (strcmp(message, "Q") == 0){
+	if(message[len-1] == '\n')
+		message[len-1]='\0';
+	if (strcmp(message, "Q\0") == 0){
             break;
         }
+	printf("%s\n",message);
+        write(sock, message, strlen(message)+1);
 
-        write(sock, message, strlen(message));
-
-        int str_len = read(sock, message, sizeof(message) - 1);
+	memset(message, 0, sizeof(message));	
+	int str_len = read(sock, message, sizeof(message)-1);
         if (str_len == -1)
             error_handling("read() error");
-
-        message[str_len] = 0;
-        printf("Message from server: %s", message);
-
+        message[str_len] = '\0';
+        printf("Message from server: %s\n", message);
+	fflush(stdout);
     }
 
     close(sock);
 
-    return 0;
+   return 0;
 }
 

@@ -16,28 +16,6 @@ void error_handling(const char *message){
 
 char nicknames[MAX_CLIENT][NICK_SIZE];
 
-void broadcast(int from, char *message, int size, fd_set *reads){
-    int i;
-    for(i = 0; i < MAX_CLIENT; i++){
-        if(FD_ISSET(i, reads)){
-            char buf[BUFSIZE+NICK_SIZE] = {0,};
-            sprintf(buf, "[%s] %s", nicknames[from], message);
-            write(i, buf, strlen(buf));
-        }
-    }
-}
-
-void send_current_users(int to, fd_set *reads){
-    int i;
-    for(i = 0; i < MAX_CLIENT; i++){
-        if(FD_ISSET(i, reads) && i != to){
-            char buf[BUFSIZE+NICK_SIZE] = {0,};
-            sprintf(buf, "* Current user: %s", nicknames[i]);
-            write(to, buf, strlen(buf));
-        }
-    }
-}
-
 int main(int argc, char **argv){
 	int serv_sock;
 	struct sockaddr_in serv_addr;
@@ -81,23 +59,22 @@ int main(int argc, char **argv){
 					if (fd_max < clnt_sock)
 						fd_max=clnt_sock;
 					read(clnt_sock, nicknames[clnt_sock], NICK_SIZE); // 닉네임 읽기
-                    			printf("connected client : %s ", nicknames[clnt_sock]);
-					send_current_users(clnt_sock, &reads); // 현재 유저 목록 보내기
-                    			char buf[BUFSIZE+NICK_SIZE] = {0,};
-                    			sprintf(buf, "* New user joined: %s", nicknames[clnt_sock]);
-                    			broadcast(clnt_sock, buf, strlen(buf), &reads); // 새 유저 참가 알림
+					printf("connected client: %s\n", nicknames[clnt_sock]);
 				} else {
 					str_len = read(fd, message, BUFSIZE);
 					if(str_len == 0) { // connection close
-						FD_CLR(fd, &reads);
 						char buf[BUFSIZE+NICK_SIZE] = {0,};
-                        			sprintf(buf, "* User left: %s", nicknames[fd]);
-                        			broadcast(fd, buf, strlen(buf), &reads); // 유저 퇴장 알림
+						printf("* User left: %s\n", nicknames[fd]);
+						FD_CLR(fd, &reads);
+                        			
 					} else {
-						broadcast(fd, message, str_len, &reads); // 메시지 전달		
+						printf("%s : %s\n", nicknames[fd], message);
+						write(fd, message, strlen(message));
+						memset(message, 0, sizeof(message));
 					}
 				}
 			} //if(FD_ISSET(fd, &temps))
 		} //for(fd=3; fd<fd_max+1; fd++)
 	} //while(1)
 }
+
