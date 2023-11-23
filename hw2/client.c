@@ -53,12 +53,11 @@ int main(int argc, char **argv) {
 	if (FD_ISSET(sock, &temps)) {
         	// Receive message from server
         	memset(message, 0, sizeof(message));
-		int str_len = read(sock, message, sizeof(message)-1);
-        	if (str_len == -1)
+		int str_len = read(sock, message, sizeof(message));
+       		if (str_len == -1)
             		error_handling("read() error");
 		message[str_len] = '\0';
         	printf("%s", message);
-		
 
     	}	
 	if (FD_ISSET(0, &temps)) {
