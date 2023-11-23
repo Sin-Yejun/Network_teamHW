@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <string.h>
+#include <fcntl.h>
+#include <sys/select.h>
 #define BUFSIZE 30
 #define NICK_SIZE 30
 
