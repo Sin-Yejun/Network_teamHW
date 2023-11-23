@@ -70,6 +70,14 @@ int main(int argc, char **argv){
 					} else {
 						printf("%s : %s\n", nicknames[fd], message);
 						write(fd, message, strlen(message));
+						char msg_with_id[BUFSIZE + NICK_SIZE + 4]; // +4 for " : " and null terminator
+    						sprintf(msg_with_id, "%s : %s\n", nicknames[fd], message);
+						int i;
+						for (i = 3; i < fd_max+1; i++) {
+        						if (FD_ISSET(i, &reads) && i != serv_sock) {
+            							write(i, msg_with_id, strlen(msg_with_id));
+        						}
+    						}
 						memset(message, 0, sizeof(message));
 					}
 				}

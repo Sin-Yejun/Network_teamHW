@@ -34,30 +34,46 @@ int main(int argc, char **argv) {
 
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
         error_handling("connect() error");
-
+    //printf("Input message (Q to quit): ");
     strncpy(nickname, argv[3], NICK_SIZE);
     write(sock, nickname, NICK_SIZE); // 닉네임 보내기
 
+    fd_set reads, temps;
+    int fd_max;
+	
+    FD_ZERO(&reads);
+    FD_SET(0, &reads); // 0 is file descriptor of stdin
+    FD_SET(sock, &reads);
+    fd_max = sock;
+    
     while (1) {
-        memset(message, 0, sizeof(message));
-	printf("Input message (Q to quit): ");
-        fgets(message, sizeof(message), stdin);
-	int len = strlen(message);
-	if(message[len-1] == '\n')
-		message[len-1]='\0';
-	if (strcmp(message, "Q\0") == 0){
-            break;
-        }
-	printf("%s\n",message);
-        write(sock, message, strlen(message)+1);
+	temps = reads;
+    	if (select(fd_max+1, &temps, 0, 0, NULL) == -1)
+        	error_handling("select() error");
+	if (FD_ISSET(sock, &temps)) {
+        	// Receive message from server
+        	memset(message, 0, sizeof(message));
+		int str_len = read(sock, message, sizeof(message)-1);
+        	if (str_len == -1)
+            		error_handling("read() error");
+		message[str_len] = '\0';
+        	printf("%s", message);
+		
 
-	memset(message, 0, sizeof(message));	
-	int str_len = read(sock, message, sizeof(message)-1);
-        if (str_len == -1)
-            error_handling("read() error");
-        message[str_len] = '\0';
-        printf("Message from server: %s\n", message);
-	fflush(stdout);
+    	}	
+	if (FD_ISSET(0, &temps)) {
+        	// Send message to server
+	        memset(message, 0, sizeof(message));
+	      	fgets(message, sizeof(message), stdin);
+	        int len = strlen(message);
+	        if(message[len-1] == '\n')
+	            message[len-1]='\0';
+	        if (strcmp(message, "Q\0") == 0){
+	            break;
+	        }
+ 	       write(sock, message, strlen(message)+1);
+  	}	
+
     }
 
     close(sock);
