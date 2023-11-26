@@ -34,7 +34,6 @@ int main(int argc, char **argv) {
 
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
         error_handling("connect() error");
-    //printf("Input message (Q to quit): ");
     strncpy(nickname, argv[3], NICK_SIZE);
     write(sock, nickname, NICK_SIZE); // 닉네임 보내기
 
